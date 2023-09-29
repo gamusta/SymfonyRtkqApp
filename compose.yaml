@@ -1,0 +1,48 @@
+## Fichier : docker-compose.yml
+version: '3'
+services:
+  nginx:
+    build:
+      context: ./docker/nginx
+    container_name: nginx-con
+    ports:
+      - 80:80
+    networks:
+      - symfony
+
+  db: #address
+    image: mariadb:10.11.2
+    container_name: db-con
+    ports:
+      - "3317:3306"
+    environment:
+      - MYSQL_DATABASE=symfony
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - ./dbdata:/var/lib/mysql
+    networks:
+      - symfony
+
+  php:
+    build:
+      context: ./docker/php
+    container_name: php-con
+    environment:
+      - DATABASE_URL=mysql://root:root@db/symfony
+    volumes:
+      - ./back:/var/www/back/:cached
+    networks:
+      - symfony
+
+  node:
+    container_name: node-con
+    build:
+      context: ./front
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./front:/app
+      - /app/node_modules
+
+networks:
+  symfony:
